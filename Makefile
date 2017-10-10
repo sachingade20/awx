@@ -23,7 +23,7 @@ COMPOSE_HOST ?= $(shell hostname)
 
 VENV_BASE ?= /venv
 SCL_PREFIX ?=
-CELERY_SCHEDULE_FILE ?= /celerybeat-schedule
+CELERY_SCHEDULE_FILE ?= /var/lib/awx/beat.db
 
 DEV_DOCKER_TAG_BASE ?= gcr.io/ansible-tower-engineering
 # Python packages to install only from source (not from binary wheels)
@@ -320,7 +320,7 @@ celeryd:
 	@if [ "$(VENV_BASE)" ]; then \
 		. $(VENV_BASE)/awx/bin/activate; \
 	fi; \
-	$(PYTHON) manage.py celeryd -l DEBUG -B -Ofair --autoreload --autoscale=100,4 --schedule=$(CELERY_SCHEDULE_FILE) -Q tower_broadcast_all -n celery@$(COMPOSE_HOST)
+	$(PYTHON) manage.py celery worker -l DEBUG -B -Ofair --autoscale=100,4 -s $(CELERY_SCHEDULE_FILE) -Q tower_broadcast_all
 
 # Run to start the zeromq callback receiver
 receiver:
